@@ -186,7 +186,8 @@ const BSON_SUGGESTIONS: CodeEditorSuggestionItem[] = [
   {
     label: '$project',
     kind: CodeEditorSuggestionItemKind.Method,
-    detail: 'Pipeline stage: reshapes documents (include/exclude/compute fields)',
+    detail:
+      'Pipeline stage: reshapes documents (include/exclude/compute fields)',
     documentation: '{ "$project": { "<field>": 1, "_id": 0 } }',
   },
   {
@@ -210,13 +211,15 @@ const BSON_SUGGESTIONS: CodeEditorSuggestionItem[] = [
   {
     label: '$unwind',
     kind: CodeEditorSuggestionItemKind.Method,
-    detail: 'Pipeline stage: deconstructs an array field into one document per element',
+    detail:
+      'Pipeline stage: deconstructs an array field into one document per element',
     documentation: '{ "$unwind": "$<field>" }',
   },
   {
     label: '$lookup',
     kind: CodeEditorSuggestionItemKind.Method,
-    detail: 'Pipeline stage: performs a left outer join with another collection',
+    detail:
+      'Pipeline stage: performs a left outer join with another collection',
     documentation:
       '{ "$lookup": { "from": "<collection>", "localField": "<field>", "foreignField": "<field>", "as": "<field>" } }',
   },
@@ -241,7 +244,8 @@ const BSON_SUGGESTIONS: CodeEditorSuggestionItem[] = [
   {
     label: '$replaceRoot',
     kind: CodeEditorSuggestionItemKind.Method,
-    detail: 'Pipeline stage: replaces the document with a specified sub-document',
+    detail:
+      'Pipeline stage: replaces the document with a specified sub-document',
     documentation: '{ "$replaceRoot": { "newRoot": "$<field>" } }',
   },
   {
@@ -314,7 +318,7 @@ interface Props {
 
 // The editor grows with its content, but stays within these bounds so it never
 // collapses to nothing or takes over the whole query editor.
-const MIN_HEIGHT = 40;
+const MIN_HEIGHT = 32;
 const MAX_HEIGHT = 500;
 
 export function BsonEditor({ label, value, onChange }: Props) {
