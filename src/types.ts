@@ -9,6 +9,10 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     sort: '{"_id" : -1}',
     limit: 50,
   },
+  aggregate: {
+    collection: '',
+    pipeline: '[]',
+  },
 };
 
 export const DEFAULT_QUERY: Partial<Query> = {
@@ -19,10 +23,14 @@ export const DEFAULT_QUERY: Partial<Query> = {
   limit: 50,
 };
 
-export type QueryType = 'collections' | 'find';
+export type QueryType = 'collections' | 'find' | 'aggregate';
 
 export interface Query
-  extends DataQuery, QueryModelCollections, QueryModelFind {
+  extends
+  DataQuery,
+  QueryModelCollections,
+  QueryModelFind,
+  QueryModelAggregate {
   queryType: QueryType;
 }
 
@@ -33,6 +41,11 @@ interface QueryModelFind {
   filter?: string;
   sort?: string;
   limit?: number;
+}
+
+interface QueryModelAggregate {
+  collection?: string;
+  pipeline?: string;
 }
 
 export interface Options extends DataSourceJsonData {

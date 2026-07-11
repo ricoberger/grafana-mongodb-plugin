@@ -15,6 +15,7 @@ type Client interface {
 	Ping(ctx context.Context) error
 	GetCollections(ctx context.Context) ([]string, error)
 	Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error)
+	Aggregate(ctx context.Context, collectionName, pipeline string) ([]bson.M, error)
 	Disconnect(ctx context.Context) error
 }
 
@@ -54,6 +55,33 @@ func (c *client) Find(ctx context.Context, collection string, filter string, sor
 		Skip:  nil,
 		Sort:  bsonSort,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	var results = make([]bson.M, 0)
+
+	for cursor.Next(ctx) {
+		var elem bson.M
+		err := cursor.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, elem)
+	}
+
+	return results, nil
+}
+
+func (c *client) Aggregate(ctx context.Context, collectionName, pipeline string) ([]bson.M, error) {
+	var bsonPipeline any
+	err := bson.UnmarshalExtJSON([]byte(pipeline), false, &bsonPipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	cursor, err := c.db.Collection(collectionName).Aggregate(ctx, bsonPipeline)
 	if err != nil {
 		return nil, err
 	}

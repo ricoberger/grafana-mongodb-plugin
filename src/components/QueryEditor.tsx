@@ -26,13 +26,17 @@ export function QueryEditor({
       <InlineFieldRow>
         <InlineField label="Query Type" labelWidth={25}>
           <Combobox<QueryType>
-            width={64}
+            width={90}
             value={query.queryType}
-            options={[{ label: 'Find', value: 'find' }]}
+            options={[
+              { label: 'Find', value: 'find' },
+              { label: 'Aggregate', value: 'aggregate' },
+            ]}
             onChange={(option: ComboboxOption<QueryType>) => {
               onChange({
                 ...query,
                 ...DEFAULT_QUERIES[option.value],
+                collection: query.collection,
                 queryType: option.value,
               });
               onRunQuery();
@@ -50,7 +54,6 @@ export function QueryEditor({
               ...query,
               collection: collection,
             });
-            onRunQuery();
           }}
         />
       </InlineFieldRow>
@@ -83,13 +86,25 @@ export function QueryEditor({
         <InlineFieldRow>
           <InlineField label="Limit" labelWidth={25}>
             <Input
-              width={64}
+              width={90}
               value={query.limit}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 onChange({ ...query, limit: parseInt(event.target.value, 10) });
               }}
             />
           </InlineField>
+        </InlineFieldRow>
+      )}
+
+      {query.queryType === 'aggregate' && (
+        <InlineFieldRow>
+          <BsonEditor
+            label="Pipeline"
+            value={query.pipeline}
+            onChange={(value) => {
+              onChange({ ...query, pipeline: value });
+            }}
+          />
         </InlineFieldRow>
       )}
     </>

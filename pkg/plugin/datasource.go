@@ -49,6 +49,7 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 	queryTypeMux := datasource.NewQueryTypeMux()
 	queryTypeMux.HandleFunc(models.QueryCollections, ds.handleCollectionsQueries)
 	queryTypeMux.HandleFunc(models.QueryFind, ds.handleFindQueries)
+	queryTypeMux.HandleFunc(models.QueryAggregate, ds.handleAggregateQueries)
 	ds.queryHandler = queryTypeMux
 
 	return ds, nil

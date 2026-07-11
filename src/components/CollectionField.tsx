@@ -31,7 +31,7 @@ export function CollectionField({
   return (
     <InlineField label="Collection" labelWidth={25}>
       <Combobox<string>
-        width={64}
+        width={90}
         value={collection}
         createCustomValue={true}
         options={state.value || []}

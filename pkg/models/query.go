@@ -5,6 +5,7 @@ type QueryType string
 const (
 	QueryCollections = "collections"
 	QueryFind        = "find"
+	QueryAggregate   = "aggregate"
 )
 
 type QueryModelFind struct {
@@ -12,4 +13,9 @@ type QueryModelFind struct {
 	Filter     string `json:"filter"`
 	Sort       string `json:"sort"`
 	Limit      int64  `json:"limit"`
+}
+
+type QueryModelAggregate struct {
+	Collection string `json:"collection"`
+	Pipeline   string `json:"pipeline"`
 }
