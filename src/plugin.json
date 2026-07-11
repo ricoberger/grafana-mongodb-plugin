@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "datasource",
+  "name": "MongoDB",
+  "id": "ricoberger-mongodb-datasource",
+  "metrics": true,
+  "logs": true,
+  "backend": true,
+  "executable": "gpx_mongodb",
+  "info": {
+    "keywords": [
+      "datasource",
+      "mongodb"
+    ],
+    "description": "MongoDB plugin for Grafana.",
+    "author": {
+      "name": "Rico Berger"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [
+      {
+        "name": "Repository",
+        "url": "https://github.com/ricoberger/grafana-mongodb-plugin"
+      },
+      {
+        "name": "Documentation",
+        "url": "https://github.com/ricoberger/grafana-mongodb-plugin/blob/main/README.md"
+      },
+      {
+        "name": "Issues",
+        "url": "https://github.com/ricoberger/grafana-mongodb-plugin/issues"
+      },
+      {
+        "name": "License",
+        "url": "https://github.com/ricoberger/grafana-mongodb-plugin/blob/main/LICENSE"
+      },
+      {
+        "name": "Sponsorship",
+        "url": "https://github.com/ricoberger"
+      }
+    ],
+    "screenshots": [
+      {
+        "name": "TODO",
+        "path": "img/screenshots/dashboard-overview.png"
+      }
+    ],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "dependencies": {
+    "grafanaDependency": ">=12.3.0",
+    "plugins": []
+  }
+}
