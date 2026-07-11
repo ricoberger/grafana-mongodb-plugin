@@ -2,7 +2,9 @@ package mongodb
 
 import (
 	"context"
+	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/ricoberger/grafana-mongodb-plugin/pkg/models"
 
@@ -106,18 +108,37 @@ func (c *client) Disconnect(ctx context.Context) error {
 }
 
 func NewClient(ctx context.Context, settings *models.PluginSettings) (Client, error) {
+	hosts := settings.Hosts
+	if settings.Port != 0 {
+		parts := strings.Split(settings.Hosts, ",")
+		for i, h := range parts {
+			if h = strings.TrimSpace(h); h != "" && !strings.Contains(h, ":") {
+				h = fmt.Sprintf("%s:%d", h, settings.Port)
+			}
+			parts[i] = h
+		}
+		hosts = strings.Join(parts, ",")
+	}
+
 	uri := &url.URL{
-		Host:     settings.Hosts,
-		Path:     settings.Database,
 		Scheme:   "mongodb",
+		Host:     hosts,
+		Path:     "/" + settings.Database,
 		RawQuery: settings.ConnectionOptions,
 	}
 
+	// Only add credentials when a username is set (keeps no-auth working), and
+	// let url encode any special characters in the password. Embedding the
+	// credentials in the URI lets the driver derive authSource from the database
+	// (and honor an authSource override in connectionOptions).
+	if settings.Username != "" {
+		uri.User = url.UserPassword(settings.Username, settings.Secrets.Password)
+	}
+
 	opts := mongoOptions.Client().ApplyURI(uri.String()).SetAppName("grafana-mongodb-plugin")
-	opts.SetAuth(mongoOptions.Credential{
-		Username: settings.Username,
-		Password: settings.Secrets.Password,
-	})
+	if err := opts.Validate(); err != nil {
+		return nil, err
+	}
 
 	mongoClient, err := mongo.Connect(ctx, opts)
 	if err != nil {
