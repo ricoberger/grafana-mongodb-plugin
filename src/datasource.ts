@@ -1,26 +1,84 @@
-import { DataSourceInstanceSettings, CoreApp, ScopedVars } from '@grafana/data';
+import {
+  DataSourceInstanceSettings,
+  CoreApp,
+  ScopedVars,
+  DataQueryRequest,
+  DataQueryResponse,
+  LegacyMetricFindQueryOptions,
+  MetricFindValue,
+  DataFrame,
+} from '@grafana/data';
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
+import { lastValueFrom, Observable } from 'rxjs';
 
-import { MyQuery, Options, DEFAULT_QUERY } from './types';
+import { Query, Options, DEFAULT_QUERY } from './types';
 
-export class DataSource extends DataSourceWithBackend<MyQuery, Options> {
+export class DataSource extends DataSourceWithBackend<Query, Options> {
   constructor(instanceSettings: DataSourceInstanceSettings<Options>) {
     super(instanceSettings);
   }
 
-  getDefaultQuery(_: CoreApp): Partial<MyQuery> {
+  getDefaultQuery(_: CoreApp): Partial<Query> {
     return DEFAULT_QUERY;
   }
 
-  applyTemplateVariables(query: MyQuery, scopedVars: ScopedVars) {
+  applyTemplateVariables(query: Query, scopedVars: ScopedVars) {
     return {
       ...query,
-      queryText: getTemplateSrv().replace(query.queryText, scopedVars),
+      queryType: query.queryType || DEFAULT_QUERY.queryType,
+      collection: getTemplateSrv().replace(query.collection, scopedVars),
+      filter: getTemplateSrv().replace(query.filter, scopedVars),
+      sort: getTemplateSrv().replace(query.sort, scopedVars),
     };
   }
 
-  filterQuery(query: MyQuery): boolean {
-    // if no query has been provided, prevent the query from being executed
-    return !!query.queryText;
+  query(request: DataQueryRequest<Query>): Observable<DataQueryResponse> {
+    return super.query(request);
+  }
+
+  async metricFindQuery(
+    query: Query,
+    options?: LegacyMetricFindQueryOptions,
+  ): Promise<MetricFindValue[]> {
+    const q = this.query({
+      targets: [
+        {
+          ...query,
+          refId: query.refId
+            ? `metricsFindQuery-${query.refId}`
+            : 'metricFindQuery',
+        },
+      ],
+      range: options?.range,
+    } as DataQueryRequest<Query>);
+
+    const response = await lastValueFrom(q as Observable<DataQueryResponse>);
+
+    if (
+      response &&
+      (!response.data.length || !response.data[0].fields.length)
+    ) {
+      return [];
+    }
+
+    return response
+      ? (response.data[0] as DataFrame).fields[0].values.map((_) => {
+        return {
+          text: _.toString(),
+          value: _.toString(),
+        };
+      })
+      : [];
+  }
+
+  filterQuery(query: Query): boolean {
+    if (
+      query.queryType === 'find' &&
+      (!query.collection || !query.filter || !query.sort || !query.limit)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 }

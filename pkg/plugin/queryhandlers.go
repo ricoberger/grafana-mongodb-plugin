@@ -2,10 +2,15 @@ package plugin
 
 import (
 	"context"
+	"encoding/json"
+	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/grafana/grafana-plugin-sdk-go/experimental/concurrent"
+	"github.com/ricoberger/grafana-mongodb-plugin/pkg/models"
+	"github.com/ricoberger/grafana-mongodb-plugin/pkg/mongodb"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (d *Datasource) handleCollectionsQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
@@ -27,6 +32,62 @@ func (d *Datasource) handleCollections(ctx context.Context, query concurrent.Que
 	frame.SetMeta(&data.FrameMeta{
 		PreferredVisualization: data.VisTypeTable,
 		Type:                   data.FrameTypeTable,
+	})
+
+	var response backend.DataResponse
+	response.Frames = append(response.Frames, frame)
+
+	return response
+}
+
+func (d *Datasource) handleFindQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+	return concurrent.QueryData(ctx, req, d.handleFind, 10)
+}
+
+func (d *Datasource) handleFind(ctx context.Context, query concurrent.Query) backend.DataResponse {
+	var qm models.QueryModelFind
+	err := json.Unmarshal(query.DataQuery.JSON, &qm)
+	if err != nil {
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
+	}
+
+	documents, err := d.mongoClient.Find(ctx, qm.Collection, qm.Filter, qm.Sort, qm.Limit)
+	if err != nil {
+		d.logger.Error("Failed to run find query", "error", err.Error())
+		return backend.ErrorResponseWithErrorSource(err)
+	}
+
+	var timestamps []time.Time
+	var bodies []string
+	var labels []json.RawMessage
+	for _, document := range documents {
+		jsonDocument, err := bson.MarshalExtJSON(document, true, false)
+		if err != nil {
+			d.logger.Error("Failed to marshal document", "error", err.Error())
+			continue
+		}
+
+		jsonLabels, err := json.Marshal(mongodb.FlattenDocument(document))
+		if err != nil {
+			d.logger.Error("Failed to marshal flattened document", "error", err.Error())
+			continue
+		}
+
+		timestamps = append(timestamps, query.DataQuery.TimeRange.To)
+		bodies = append(bodies, string(jsonDocument))
+		labels = append(labels, json.RawMessage(jsonLabels))
+	}
+
+	frame := data.NewFrame(
+		"Documents",
+		data.NewField("timestamp", nil, timestamps),
+		data.NewField("body", nil, bodies),
+		data.NewField("labels", nil, labels),
+	)
+
+	frame.SetMeta(&data.FrameMeta{
+		PreferredVisualization: data.VisTypeLogs,
+		Type:                   data.FrameTypeLogLines,
 	})
 
 	var response backend.DataResponse

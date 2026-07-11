@@ -1,22 +1,38 @@
 import { DataSourceJsonData } from '@grafana/data';
 import { DataQuery } from '@grafana/schema';
 
-export interface MyQuery extends DataQuery {
-  queryText?: string;
-  constant: number;
-}
-
-export const DEFAULT_QUERY: Partial<MyQuery> = {
-  constant: 6.5,
+export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
+  collections: {},
+  find: {
+    collection: '',
+    filter: '{}',
+    sort: '{"_id" : -1}',
+    limit: 50,
+  },
 };
 
-export interface DataPoint {
-  Time: number;
-  Value: number;
+export const DEFAULT_QUERY: Partial<Query> = {
+  queryType: 'find',
+  collection: '',
+  filter: '{}',
+  sort: '{"_id" : -1}',
+  limit: 50,
+};
+
+export type QueryType = 'collections' | 'find';
+
+export interface Query
+  extends DataQuery, QueryModelCollections, QueryModelFind {
+  queryType: QueryType;
 }
 
-export interface DataSourceResponse {
-  datapoints: DataPoint[];
+interface QueryModelCollections { }
+
+interface QueryModelFind {
+  collection?: string;
+  filter?: string;
+  sort?: string;
+  limit?: number;
 }
 
 export interface Options extends DataSourceJsonData {

@@ -14,6 +14,7 @@ import (
 type Client interface {
 	Ping(ctx context.Context) error
 	GetCollections(ctx context.Context) ([]string, error)
+	Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error)
 	Disconnect(ctx context.Context) error
 }
 
@@ -33,6 +34,43 @@ func (c *client) GetCollections(ctx context.Context) ([]string, error) {
 	}
 
 	return collections, nil
+}
+
+func (c *client) Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error) {
+	var bsonFilter any
+	err := bson.UnmarshalExtJSON([]byte(filter), false, &bsonFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	var bsonSort any
+	err = bson.UnmarshalExtJSON([]byte(sort), false, &bsonSort)
+	if err != nil {
+		return nil, err
+	}
+
+	cursor, err := c.db.Collection(collection).Find(ctx, bsonFilter, &mongoOptions.FindOptions{
+		Limit: &limit,
+		Skip:  nil,
+		Sort:  bsonSort,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var results = make([]bson.M, 0)
+
+	for cursor.Next(ctx) {
+		var elem bson.M
+		err := cursor.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, elem)
+	}
+
+	return results, nil
 }
 
 func (c *client) Disconnect(ctx context.Context) error {

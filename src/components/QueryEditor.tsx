@@ -1,45 +1,100 @@
-import React, { ChangeEvent } from 'react';
-import { InlineField, Input, Stack } from '@grafana/ui';
 import { QueryEditorProps } from '@grafana/data';
+import {
+  Combobox,
+  ComboboxOption,
+  InlineField,
+  InlineFieldRow,
+  Input,
+} from '@grafana/ui';
+import React, { ChangeEvent } from 'react';
+
 import { DataSource } from '../datasource';
-import { Options, MyQuery } from '../types';
+import { DEFAULT_QUERIES, Options, Query, QueryType } from '../types';
+import { CollectionField } from './CollectionField';
 
-type Props = QueryEditorProps<DataSource, MyQuery, Options>;
+type Props = QueryEditorProps<DataSource, Query, Options>;
 
-export function QueryEditor({ query, onChange, onRunQuery }: Props) {
-  const onQueryTextChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...query, queryText: event.target.value });
-  };
-
-  const onConstantChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...query, constant: parseFloat(event.target.value) });
-    // executes the query
-    onRunQuery();
-  };
-
-  const { queryText, constant } = query;
-
+export function QueryEditor({
+  datasource,
+  query,
+  onChange,
+  onRunQuery,
+}: Props) {
   return (
-    <Stack gap={0}>
-      <InlineField label="Constant">
-        <Input
-          id="query-editor-constant"
-          onChange={onConstantChange}
-          value={constant}
-          width={8}
-          type="number"
-          step="0.1"
+    <>
+      <InlineFieldRow>
+        <InlineField label="Query Type" labelWidth={25}>
+          <Combobox<QueryType>
+            width={50}
+            value={query.queryType}
+            options={[{ label: 'Find', value: 'find' }]}
+            onChange={(option: ComboboxOption<QueryType>) => {
+              onChange({
+                ...query,
+                ...DEFAULT_QUERIES[option.value],
+                queryType: option.value,
+              });
+              onRunQuery();
+            }}
+          />
+        </InlineField>
+      </InlineFieldRow>
+
+      <InlineFieldRow>
+        <CollectionField
+          datasource={datasource}
+          collection={query.collection}
+          onCollectionChange={(collection) => {
+            onChange({
+              ...query,
+              collection: collection,
+            });
+            onRunQuery();
+          }}
         />
-      </InlineField>
-      <InlineField label="Query Text" labelWidth={16} tooltip="Not used yet">
-        <Input
-          id="query-editor-query-text"
-          onChange={onQueryTextChange}
-          value={queryText || ''}
-          required
-          placeholder="Enter a query"
-        />
-      </InlineField>
-    </Stack>
+      </InlineFieldRow>
+
+      {query.queryType === 'find' && (
+        <InlineFieldRow>
+          <InlineField label="Filter" labelWidth={25}>
+            <Input
+              width={50}
+              value={query.filter}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                onChange({ ...query, filter: event.target.value });
+              }}
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+
+      {query.queryType === 'find' && (
+        <InlineFieldRow>
+          <InlineField label="Sort" labelWidth={25}>
+            <Input
+              width={50}
+              value={query.sort}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                onChange({ ...query, sort: event.target.value });
+              }}
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+
+      {query.queryType === 'find' && (
+        <InlineFieldRow>
+          <InlineField label="Limit" labelWidth={25}>
+            <Input
+              width={50}
+              value={query.limit}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                onChange({ ...query, limit: parseInt(event.target.value, 10) });
+              }}
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+    </>
   );
 }
