@@ -43,7 +43,7 @@ func NewClient(ctx context.Context, settings *models.PluginSettings) (Client, er
 	uri := &url.URL{
 		Host:     settings.Hosts,
 		Path:     settings.Database,
-		Scheme:   "mongodb://",
+		Scheme:   "mongodb",
 		RawQuery: settings.ConnectionOptions,
 	}
 

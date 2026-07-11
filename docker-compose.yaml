@@ -7,3 +7,7 @@ services:
       args:
         grafana_image: ${GRAFANA_IMAGE:-grafana}
         grafana_version: ${GRAFANA_VERSION:-12.3.0}
+    environment:
+      GF_LOG_FILTERS: plugin.ricoberger-mongodb-datasource:debug
+      GF_LOG_LEVEL: error
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD}

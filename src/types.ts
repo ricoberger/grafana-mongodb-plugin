@@ -19,16 +19,14 @@ export interface DataSourceResponse {
   datapoints: DataPoint[];
 }
 
-/**
- * These are options configured for each DataSource instance
- */
-export interface MyDataSourceOptions extends DataSourceJsonData {
-  path?: string;
+export interface Options extends DataSourceJsonData {
+  hosts?: string;
+  port?: number;
+  database?: string;
+  username?: string;
+  connectionOptions?: string;
 }
 
-/**
- * Value that is used in the backend, but never sent over HTTP to the frontend
- */
-export interface MySecureJsonData {
-  apiKey?: string;
+export interface OptionsSecure {
+  password?: string;
 }

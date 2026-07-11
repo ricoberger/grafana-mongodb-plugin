@@ -1,69 +1,127 @@
 import React, { ChangeEvent } from 'react';
 import { InlineField, Input, SecretInput } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { MyDataSourceOptions, MySecureJsonData } from '../types';
 
-interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions, MySecureJsonData> {}
+import { Options, OptionsSecure } from '../types';
+
+interface Props extends DataSourcePluginOptionsEditorProps<
+  Options,
+  OptionsSecure
+> { }
 
 export function ConfigEditor(props: Props) {
   const { onOptionsChange, options } = props;
   const { jsonData, secureJsonFields, secureJsonData } = options;
 
-  const onPathChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onOptionsChange({
-      ...options,
-      jsonData: {
-        ...jsonData,
-        path: event.target.value,
-      },
-    });
-  };
-
-  // Secure field (only sent to the backend)
-  const onAPIKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onOptionsChange({
-      ...options,
-      secureJsonData: {
-        apiKey: event.target.value,
-      },
-    });
-  };
-
-  const onResetAPIKey = () => {
-    onOptionsChange({
-      ...options,
-      secureJsonFields: {
-        ...options.secureJsonFields,
-        apiKey: false,
-      },
-      secureJsonData: {
-        ...options.secureJsonData,
-        apiKey: '',
-      },
-    });
-  };
-
   return (
     <>
-      <InlineField label="Path" labelWidth={14} interactive tooltip={'Json field returned to frontend'}>
+      <InlineField label="Hosts" labelWidth={25} interactive>
         <Input
-          id="config-editor-path"
-          onChange={onPathChange}
-          value={jsonData.path}
-          placeholder="Enter the path, e.g. /api/v1"
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...jsonData,
+                hosts: event.target.value,
+              },
+            });
+          }}
+          value={jsonData.hosts}
           width={40}
         />
       </InlineField>
-      <InlineField label="API Key" labelWidth={14} interactive tooltip={'Secure json field (backend only)'}>
+
+      <InlineField label="Port" labelWidth={25} interactive>
+        <Input
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...jsonData,
+                port: parseInt(event.target.value, 10),
+              },
+            });
+          }}
+          value={jsonData.port}
+          width={40}
+        />
+      </InlineField>
+
+      <InlineField label="Database" labelWidth={25} interactive>
+        <Input
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...jsonData,
+                database: event.target.value,
+              },
+            });
+          }}
+          value={jsonData.database}
+          width={40}
+        />
+      </InlineField>
+
+      <InlineField label="Username" labelWidth={25} interactive>
+        <Input
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...jsonData,
+                username: event.target.value,
+              },
+            });
+          }}
+          value={jsonData.username}
+          width={40}
+        />
+      </InlineField>
+
+      <InlineField label="Password" labelWidth={25} interactive>
         <SecretInput
           required
-          id="config-editor-api-key"
-          isConfigured={secureJsonFields.apiKey}
-          value={secureJsonData?.apiKey}
-          placeholder="Enter your API key"
+          isConfigured={secureJsonFields.password}
+          value={secureJsonData?.password}
           width={40}
-          onReset={onResetAPIKey}
-          onChange={onAPIKeyChange}
+          onReset={() => {
+            onOptionsChange({
+              ...options,
+              secureJsonFields: {
+                ...options.secureJsonFields,
+                password: false,
+              },
+              secureJsonData: {
+                ...options.secureJsonData,
+                password: '',
+              },
+            });
+          }}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              secureJsonData: {
+                password: event.target.value,
+              },
+            });
+          }}
+        />
+      </InlineField>
+
+      <InlineField label="Connection Options" labelWidth={25} interactive>
+        <Input
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...jsonData,
+                connectionOptions: event.target.value,
+              },
+            });
+          }}
+          value={jsonData.connectionOptions}
+          width={40}
         />
       </InlineField>
     </>

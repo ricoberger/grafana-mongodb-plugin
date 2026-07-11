@@ -33,6 +33,7 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 		logger.Error("Failed to load plugin settings", "error", err.Error())
 		return nil, err
 	}
+	// logger.Debug("Plugin settings loaded successfully", "hosts", settings.Hosts, "port", settings.Port, "database", settings.Database, "username", settings.Username, "password", settings.Secrets.Password, "connectionOptions", settings.ConnectionOptions)
 
 	mongoClient, err := mongodb.NewClient(ctx, settings)
 	if err != nil {

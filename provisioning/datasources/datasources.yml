@@ -1,14 +1,19 @@
 apiVersion: 1
 
 datasources:
-  - name: 'mongodb'
-    type: 'ricoberger-mongodb-datasource'
+  - name: MongoDB
+    type: ricoberger-mongodb-datasource
+    uid: mongodb
     access: proxy
     isDefault: false
     orgId: 1
     version: 1
     editable: true
     jsonData:
-      path: '/resources'
+      hosts: host.docker.internal
+      port: 27017
+      database: backend
+      username: readonly
+      connectionOptions: replicaSet=rs0&directConnection=true
     secureJsonData:
-      apiKey: 'api-key'
+      password: ${MONGODB_PASSWORD}
