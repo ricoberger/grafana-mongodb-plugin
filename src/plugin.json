@@ -44,8 +44,16 @@
     ],
     "screenshots": [
       {
-        "name": "TODO",
-        "path": "img/screenshots/dashboard-overview.png"
+        "name": "Filter Raw",
+        "path": "img/screenshots/filter-raw.png"
+      },
+      {
+        "name": "Filter Table",
+        "path": "img/screenshots/filter-table.png"
+      },
+      {
+        "name": "Aggregate Raw",
+        "path": "img/screenshots/aggregate-raw.png"
       }
     ],
     "version": "%VERSION%",
