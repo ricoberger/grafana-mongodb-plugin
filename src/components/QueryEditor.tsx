@@ -10,6 +10,7 @@ import React, { ChangeEvent } from 'react';
 
 import { DataSource } from '../datasource';
 import { DEFAULT_QUERIES, Options, Query, QueryType } from '../types';
+import { BsonEditor } from './BsonEditor';
 import { CollectionField } from './CollectionField';
 
 type Props = QueryEditorProps<DataSource, Query, Options>;
@@ -25,7 +26,7 @@ export function QueryEditor({
       <InlineFieldRow>
         <InlineField label="Query Type" labelWidth={25}>
           <Combobox<QueryType>
-            width={50}
+            width={64}
             value={query.queryType}
             options={[{ label: 'Find', value: 'find' }]}
             onChange={(option: ComboboxOption<QueryType>) => {
@@ -56,29 +57,25 @@ export function QueryEditor({
 
       {query.queryType === 'find' && (
         <InlineFieldRow>
-          <InlineField label="Filter" labelWidth={25}>
-            <Input
-              width={50}
-              value={query.filter}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                onChange({ ...query, filter: event.target.value });
-              }}
-            />
-          </InlineField>
+          <BsonEditor
+            label="Filter"
+            value={query.filter}
+            onChange={(value) => {
+              onChange({ ...query, filter: value });
+            }}
+          />
         </InlineFieldRow>
       )}
 
       {query.queryType === 'find' && (
         <InlineFieldRow>
-          <InlineField label="Sort" labelWidth={25}>
-            <Input
-              width={50}
-              value={query.sort}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                onChange({ ...query, sort: event.target.value });
-              }}
-            />
-          </InlineField>
+          <BsonEditor
+            label="Sort"
+            value={query.sort}
+            onChange={(value) => {
+              onChange({ ...query, sort: value });
+            }}
+          />
         </InlineFieldRow>
       )}
 
@@ -86,7 +83,7 @@ export function QueryEditor({
         <InlineFieldRow>
           <InlineField label="Limit" labelWidth={25}>
             <Input
-              width={50}
+              width={64}
               value={query.limit}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 onChange({ ...query, limit: parseInt(event.target.value, 10) });
