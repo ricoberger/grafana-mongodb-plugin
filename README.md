@@ -26,9 +26,9 @@ Grafana.
 
 ```json
 [
-  { "$group": { "_id": "$ssoType", "count": { "$sum": 1 } } },
+  { "$group": { "_id": "$scope", "count": { "$sum": 1 } } },
   { "$sort": { "count": -1 } },
-  { "$project": { "_id": 0, "ssoType": "$_id", "count": 1 } }
+  { "$project": { "_id": 0, "scope": "$_id", "count": 1 } }
 ]
 ```
 
