@@ -6,12 +6,12 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
   find: {
     collection: '',
     filter: '{}',
-    sort: '{"_id" : -1}',
+    sort: '{"_id" : 1}',
     limit: 50,
   },
   aggregate: {
     collection: '',
-    pipeline: '[]',
+    pipeline: '[\n { "$sort": { "_id": 1 } },\n { "$limit": 50 } \n]',
   },
 };
 
