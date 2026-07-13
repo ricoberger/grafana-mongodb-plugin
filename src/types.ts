@@ -8,6 +8,8 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     filter: '{}',
     sort: '{"_id" : 1}',
     limit: 50,
+    explain: false,
+    verbosity: 'queryPlanner',
   },
   count: {
     collection: '',
@@ -16,6 +18,8 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
   aggregate: {
     collection: '',
     pipeline: '[\n { "$sort": { "_id": 1 } },\n { "$limit": 50 } \n]',
+    explain: false,
+    verbosity: 'queryPlanner',
   },
 };
 
@@ -25,9 +29,13 @@ export const DEFAULT_QUERY: Partial<Query> = {
   filter: '{}',
   sort: '{"_id" : -1}',
   limit: 50,
+  explain: false,
+  verbosity: 'queryPlanner',
 };
 
 export type QueryType = 'collections' | 'find' | 'count' | 'aggregate';
+
+export type Verbosity = 'queryPlanner' | 'executionStats' | 'allPlansExecution';
 
 export interface Query
   extends
@@ -46,6 +54,8 @@ interface QueryModelFind {
   filter?: string;
   sort?: string;
   limit?: number;
+  explain?: boolean;
+  verbosity?: Verbosity;
 }
 
 interface QueryModelCount {
@@ -56,6 +66,8 @@ interface QueryModelCount {
 interface QueryModelAggregate {
   collection?: string;
   pipeline?: string;
+  explain?: boolean;
+  verbosity?: Verbosity;
 }
 
 export interface Options extends DataSourceJsonData {

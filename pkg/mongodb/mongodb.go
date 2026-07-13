@@ -19,6 +19,8 @@ type Client interface {
 	Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error)
 	Count(ctx context.Context, collection string, filter string) (int64, error)
 	Aggregate(ctx context.Context, collection, pipeline string) ([]bson.M, error)
+	ExplainFind(ctx context.Context, collection string, filter string, sort string, limit int64, verbosity string) (bson.M, error)
+	ExplainAggregate(ctx context.Context, collection, pipeline, verbosity string) (bson.M, error)
 	Disconnect(ctx context.Context) error
 }
 
@@ -116,6 +118,73 @@ func (c *client) Aggregate(ctx context.Context, collection, pipeline string) ([]
 
 func (c *client) Disconnect(ctx context.Context) error {
 	return c.client.Disconnect(ctx)
+}
+
+const defaultExplainVerbosity = "queryPlanner"
+
+func (c *client) ExplainFind(ctx context.Context, collection string, filter string, sort string, limit int64, verbosity string) (bson.M, error) {
+	var bsonFilter any
+	err := bson.UnmarshalExtJSON([]byte(filter), false, &bsonFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	var bsonSort any
+	err = bson.UnmarshalExtJSON([]byte(sort), false, &bsonSort)
+	if err != nil {
+		return nil, err
+	}
+
+	if verbosity == "" {
+		verbosity = defaultExplainVerbosity
+	}
+
+	command := bson.D{
+		{Key: "explain", Value: bson.D{
+			{Key: "find", Value: collection},
+			{Key: "filter", Value: bsonFilter},
+			{Key: "sort", Value: bsonSort},
+			{Key: "limit", Value: limit},
+		}},
+		{Key: "verbosity", Value: verbosity},
+	}
+
+	var result bson.M
+	err = c.db.RunCommand(ctx, command).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (c *client) ExplainAggregate(ctx context.Context, collection, pipeline, verbosity string) (bson.M, error) {
+	var bsonPipeline any
+	err := bson.UnmarshalExtJSON([]byte(pipeline), false, &bsonPipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	if verbosity == "" {
+		verbosity = defaultExplainVerbosity
+	}
+
+	command := bson.D{
+		{Key: "explain", Value: bson.D{
+			{Key: "aggregate", Value: collection},
+			{Key: "pipeline", Value: bsonPipeline},
+			{Key: "cursor", Value: bson.D{}},
+		}},
+		{Key: "verbosity", Value: verbosity},
+	}
+
+	var result bson.M
+	err = c.db.RunCommand(ctx, command).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func NewClient(ctx context.Context, settings *models.PluginSettings) (Client, error) {
