@@ -97,6 +97,10 @@ export class DataSource extends DataSourceWithBackend<Query, Options> {
       return false;
     }
 
+    if (query.queryType === 'count' && (!query.collection || !query.filter)) {
+      return false;
+    }
+
     if (
       query.queryType === 'aggregate' &&
       (!query.collection || !query.pipeline)

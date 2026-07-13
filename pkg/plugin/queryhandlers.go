@@ -96,6 +96,39 @@ func (d *Datasource) handleFind(ctx context.Context, query concurrent.Query) bac
 	return response
 }
 
+func (d *Datasource) handleCountQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+	return concurrent.QueryData(ctx, req, d.handleCount, 10)
+}
+
+func (d *Datasource) handleCount(ctx context.Context, query concurrent.Query) backend.DataResponse {
+	var qm models.QueryModelCount
+	err := json.Unmarshal(query.DataQuery.JSON, &qm)
+	if err != nil {
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
+	}
+
+	count, err := d.mongoClient.Count(ctx, qm.Collection, qm.Filter)
+	if err != nil {
+		d.logger.Error("Failed to run find query", "error", err.Error())
+		return backend.ErrorResponseWithErrorSource(err)
+	}
+
+	frame := data.NewFrame(
+		"Count",
+		data.NewField("documents", nil, []int64{count}),
+	)
+
+	frame.SetMeta(&data.FrameMeta{
+		PreferredVisualization: data.VisTypeTable,
+		Type:                   data.FrameTypeTable,
+	})
+
+	var response backend.DataResponse
+	response.Frames = append(response.Frames, frame)
+
+	return response
+}
+
 func (d *Datasource) handleAggregateQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 	return concurrent.QueryData(ctx, req, d.handleAggregate, 10)
 }
