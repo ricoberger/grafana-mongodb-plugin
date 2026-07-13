@@ -10,7 +10,7 @@ import React, { ChangeEvent } from 'react';
 
 import { DataSource } from '../datasource';
 import { DEFAULT_QUERIES, Options, Query, QueryType } from '../types';
-import { BsonEditor } from './BsonEditor';
+import { BsonEditor } from './editor/BsonEditor';
 import { CollectionField } from './CollectionField';
 
 type Props = QueryEditorProps<DataSource, Query, Options>;
