@@ -43,6 +43,7 @@ func (d *Datasource) handleCollections(ctx context.Context, query concurrent.Que
 func (d *Datasource) documentsToLogsFrame(name string, documents []bson.M, to time.Time) *data.Frame {
 	var timestamps []time.Time
 	var bodies []string
+	var severities []string
 	var labels []json.RawMessage
 	for _, document := range documents {
 		jsonDocument, err := bson.MarshalExtJSON(document, true, false)
@@ -59,6 +60,7 @@ func (d *Datasource) documentsToLogsFrame(name string, documents []bson.M, to ti
 
 		timestamps = append(timestamps, to)
 		bodies = append(bodies, string(jsonDocument))
+		severities = append(severities, "unknown")
 		labels = append(labels, json.RawMessage(jsonLabels))
 	}
 
@@ -66,6 +68,7 @@ func (d *Datasource) documentsToLogsFrame(name string, documents []bson.M, to ti
 		name,
 		data.NewField("timestamp", nil, timestamps),
 		data.NewField("body", nil, bodies),
+		data.NewField("severity", nil, severities),
 		data.NewField("labels", nil, labels),
 	)
 
