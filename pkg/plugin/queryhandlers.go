@@ -40,23 +40,7 @@ func (d *Datasource) handleCollections(ctx context.Context, query concurrent.Que
 	return response
 }
 
-func (d *Datasource) handleFindQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
-	return concurrent.QueryData(ctx, req, d.handleFind, 10)
-}
-
-func (d *Datasource) handleFind(ctx context.Context, query concurrent.Query) backend.DataResponse {
-	var qm models.QueryModelFind
-	err := json.Unmarshal(query.DataQuery.JSON, &qm)
-	if err != nil {
-		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
-	}
-
-	documents, err := d.mongoClient.Find(ctx, qm.Collection, qm.Filter, qm.Sort, qm.Limit)
-	if err != nil {
-		d.logger.Error("Failed to run find query", "error", err.Error())
-		return backend.ErrorResponseWithErrorSource(err)
-	}
-
+func (d *Datasource) documentsToLogsFrame(name string, documents []bson.M, to time.Time) *data.Frame {
 	var timestamps []time.Time
 	var bodies []string
 	var labels []json.RawMessage
@@ -73,13 +57,13 @@ func (d *Datasource) handleFind(ctx context.Context, query concurrent.Query) bac
 			continue
 		}
 
-		timestamps = append(timestamps, query.DataQuery.TimeRange.To)
+		timestamps = append(timestamps, to)
 		bodies = append(bodies, string(jsonDocument))
 		labels = append(labels, json.RawMessage(jsonLabels))
 	}
 
 	frame := data.NewFrame(
-		"Documents",
+		name,
 		data.NewField("timestamp", nil, timestamps),
 		data.NewField("body", nil, bodies),
 		data.NewField("labels", nil, labels),
@@ -90,9 +74,40 @@ func (d *Datasource) handleFind(ctx context.Context, query concurrent.Query) bac
 		Type:                   data.FrameTypeLogLines,
 	})
 
-	var response backend.DataResponse
-	response.Frames = append(response.Frames, frame)
+	return frame
+}
 
+func (d *Datasource) handleFindQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+	return concurrent.QueryData(ctx, req, d.handleFind, 10)
+}
+
+func (d *Datasource) handleFind(ctx context.Context, query concurrent.Query) backend.DataResponse {
+	var qm models.QueryModelFind
+	err := json.Unmarshal(query.DataQuery.JSON, &qm)
+	if err != nil {
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
+	}
+
+	var response backend.DataResponse
+
+	if qm.Explain {
+		result, err := d.mongoClient.ExplainFind(ctx, qm.Collection, qm.Filter, qm.Sort, qm.Limit, qm.Verbosity)
+		if err != nil {
+			d.logger.Error("Failed to run explain find query", "error", err.Error())
+			return backend.ErrorResponseWithErrorSource(err)
+		}
+
+		response.Frames = append(response.Frames, d.documentsToLogsFrame("Explain", []bson.M{result}, query.DataQuery.TimeRange.To))
+		return response
+	}
+
+	documents, err := d.mongoClient.Find(ctx, qm.Collection, qm.Filter, qm.Sort, qm.Limit)
+	if err != nil {
+		d.logger.Error("Failed to run find query", "error", err.Error())
+		return backend.ErrorResponseWithErrorSource(err)
+	}
+
+	response.Frames = append(response.Frames, d.documentsToLogsFrame("Documents", documents, query.DataQuery.TimeRange.To))
 	return response
 }
 
@@ -140,47 +155,25 @@ func (d *Datasource) handleAggregate(ctx context.Context, query concurrent.Query
 		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
 	}
 
+	var response backend.DataResponse
+
+	if qm.Explain {
+		result, err := d.mongoClient.ExplainAggregate(ctx, qm.Collection, qm.Pipeline, qm.Verbosity)
+		if err != nil {
+			d.logger.Error("Failed to run explain aggregate query", "error", err.Error())
+			return backend.ErrorResponseWithErrorSource(err)
+		}
+
+		response.Frames = append(response.Frames, d.documentsToLogsFrame("Explain", []bson.M{result}, query.DataQuery.TimeRange.To))
+		return response
+	}
+
 	documents, err := d.mongoClient.Aggregate(ctx, qm.Collection, qm.Pipeline)
 	if err != nil {
 		d.logger.Error("Failed to run aggregate query", "error", err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
 	}
 
-	var timestamps []time.Time
-	var bodies []string
-	var labels []json.RawMessage
-	for _, document := range documents {
-		jsonDocument, err := bson.MarshalExtJSON(document, true, false)
-		if err != nil {
-			d.logger.Error("Failed to marshal document", "error", err.Error())
-			continue
-		}
-
-		jsonLabels, err := json.Marshal(mongodb.FlattenDocument(document))
-		if err != nil {
-			d.logger.Error("Failed to marshal flattened document", "error", err.Error())
-			continue
-		}
-
-		timestamps = append(timestamps, query.DataQuery.TimeRange.To)
-		bodies = append(bodies, string(jsonDocument))
-		labels = append(labels, json.RawMessage(jsonLabels))
-	}
-
-	frame := data.NewFrame(
-		"Documents",
-		data.NewField("timestamp", nil, timestamps),
-		data.NewField("body", nil, bodies),
-		data.NewField("labels", nil, labels),
-	)
-
-	frame.SetMeta(&data.FrameMeta{
-		PreferredVisualization: data.VisTypeLogs,
-		Type:                   data.FrameTypeLogLines,
-	})
-
-	var response backend.DataResponse
-	response.Frames = append(response.Frames, frame)
-
+	response.Frames = append(response.Frames, d.documentsToLogsFrame("Documents", documents, query.DataQuery.TimeRange.To))
 	return response
 }

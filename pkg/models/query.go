@@ -14,6 +14,8 @@ type QueryModelFind struct {
 	Filter     string `json:"filter"`
 	Sort       string `json:"sort"`
 	Limit      int64  `json:"limit"`
+	Explain    bool   `json:"explain"`
+	Verbosity  string `json:"verbosity"`
 }
 
 type QueryModelCount struct {
@@ -24,4 +26,6 @@ type QueryModelCount struct {
 type QueryModelAggregate struct {
 	Collection string `json:"collection"`
 	Pipeline   string `json:"pipeline"`
+	Explain    bool   `json:"explain"`
+	Verbosity  string `json:"verbosity"`
 }

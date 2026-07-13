@@ -4,14 +4,21 @@ import {
   ComboboxOption,
   InlineField,
   InlineFieldRow,
+  InlineSwitch,
   Input,
 } from '@grafana/ui';
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, FormEvent } from 'react';
 
 import { DataSource } from '../datasource';
-import { DEFAULT_QUERIES, Options, Query, QueryType } from '../types';
-import { BsonEditor } from './editor/BsonEditor';
+import {
+  DEFAULT_QUERIES,
+  Options,
+  Query,
+  QueryType,
+  Verbosity,
+} from '../types';
 import { CollectionField } from './CollectionField';
+import { BsonEditor } from './editor/BsonEditor';
 
 type Props = QueryEditorProps<DataSource, Query, Options>;
 
@@ -109,6 +116,45 @@ export function QueryEditor({
           />
         </InlineFieldRow>
       )}
+
+      {(query.queryType === 'find' || query.queryType === 'aggregate') && (
+        <InlineFieldRow>
+          <InlineField label="Explain" labelWidth={25}>
+            <InlineSwitch
+              value={query.explain ?? false}
+              onChange={(event: FormEvent<HTMLInputElement>) => {
+                onChange({
+                  ...query,
+                  explain: event.currentTarget.checked,
+                  verbosity: query.verbosity ?? 'queryPlanner',
+                });
+                onRunQuery();
+              }}
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+
+      {(query.queryType === 'find' || query.queryType === 'aggregate') &&
+        query.explain && (
+          <InlineFieldRow>
+            <InlineField label="Verbosity" labelWidth={25}>
+              <Combobox<Verbosity>
+                width={90}
+                value={query.verbosity ?? 'queryPlanner'}
+                options={[
+                  { label: 'Query Planner', value: 'queryPlanner' },
+                  { label: 'Execution Stats', value: 'executionStats' },
+                  { label: 'All Plans Execution', value: 'allPlansExecution' },
+                ]}
+                onChange={(option: ComboboxOption<Verbosity>) => {
+                  onChange({ ...query, verbosity: option.value });
+                  onRunQuery();
+                }}
+              />
+            </InlineField>
+          </InlineFieldRow>
+        )}
     </>
   );
 }
