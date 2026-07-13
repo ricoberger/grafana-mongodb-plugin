@@ -14,6 +14,7 @@ import { parseFilter } from 'mongodb-query-parser';
 import { lastValueFrom, Observable } from 'rxjs';
 
 import { DEFAULT_QUERY, Options, Query } from './types';
+import { VariableSupport } from './variablesupport';
 
 const toExtendedJson = (value?: string): string | undefined => {
   if (!value) {
@@ -27,6 +28,7 @@ const toExtendedJson = (value?: string): string | undefined => {
 export class DataSource extends DataSourceWithBackend<Query, Options> {
   constructor(instanceSettings: DataSourceInstanceSettings<Options>) {
     super(instanceSettings);
+    this.variables = new VariableSupport(this);
   }
 
   getDefaultQuery(_: CoreApp): Partial<Query> {
