@@ -17,7 +17,8 @@ type Client interface {
 	Ping(ctx context.Context) error
 	GetCollections(ctx context.Context) ([]string, error)
 	Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error)
-	Aggregate(ctx context.Context, collectionName, pipeline string) ([]bson.M, error)
+	Count(ctx context.Context, collection string, filter string) (int64, error)
+	Aggregate(ctx context.Context, collection, pipeline string) ([]bson.M, error)
 	Disconnect(ctx context.Context) error
 }
 
@@ -76,14 +77,24 @@ func (c *client) Find(ctx context.Context, collection string, filter string, sor
 	return results, nil
 }
 
-func (c *client) Aggregate(ctx context.Context, collectionName, pipeline string) ([]bson.M, error) {
+func (c *client) Count(ctx context.Context, collection string, filter string) (int64, error) {
+	var bsonFilter any
+	err := bson.UnmarshalExtJSON([]byte(filter), false, &bsonFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return c.db.Collection(collection).CountDocuments(ctx, bsonFilter)
+}
+
+func (c *client) Aggregate(ctx context.Context, collection, pipeline string) ([]bson.M, error) {
 	var bsonPipeline any
 	err := bson.UnmarshalExtJSON([]byte(pipeline), false, &bsonPipeline)
 	if err != nil {
 		return nil, err
 	}
 
-	cursor, err := c.db.Collection(collectionName).Aggregate(ctx, bsonPipeline)
+	cursor, err := c.db.Collection(collection).Aggregate(ctx, bsonPipeline)
 	if err != nil {
 		return nil, err
 	}

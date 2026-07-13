@@ -30,6 +30,7 @@ export function QueryEditor({
             value={query.queryType}
             options={[
               { label: 'Find', value: 'find' },
+              { label: 'Count', value: 'count' },
               { label: 'Aggregate', value: 'aggregate' },
             ]}
             onChange={(option: ComboboxOption<QueryType>) => {
@@ -54,11 +55,12 @@ export function QueryEditor({
               ...query,
               collection: collection,
             });
+            onRunQuery();
           }}
         />
       </InlineFieldRow>
 
-      {query.queryType === 'find' && (
+      {(query.queryType === 'find' || query.queryType === 'count') && (
         <InlineFieldRow>
           <BsonEditor
             label="Filter"
