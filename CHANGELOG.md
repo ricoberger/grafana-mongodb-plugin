@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.2.0](https://github.com/ricoberger/grafana-mongodb-plugin/tree/v0.2.0) (2026-07-13)
+
+[Full Changelog](https://github.com/ricoberger/grafana-mongodb-plugin/compare/v0.1.0...v0.2.0)
+
+- feat\(queries\): add support for explain queries for `find` and `aggregate` [\#4](https://github.com/ricoberger/grafana-mongodb-plugin/pull/4) ([ricoberger](https://github.com/ricoberger))
+- feat\(count\): add support for count queries [\#3](https://github.com/ricoberger/grafana-mongodb-plugin/pull/3) ([ricoberger](https://github.com/ricoberger))
+- feat: support JavaScript query syntax with editor completions [\#2](https://github.com/ricoberger/grafana-mongodb-plugin/pull/2) ([ricoberger](https://github.com/ricoberger))
+- feat\(frontend\): add default pipeline to aggregate query [\#1](https://github.com/ricoberger/grafana-mongodb-plugin/pull/1) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.1.0](https://github.com/ricoberger/grafana-mongodb-plugin/tree/v0.1.0) (2026-07-12)
 
 [Full Changelog](https://github.com/ricoberger/grafana-mongodb-plugin/compare/9b5787b5cf7552a921e1b1a548161ce3bdc73959...v0.1.0)
