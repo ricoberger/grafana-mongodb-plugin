@@ -9,9 +9,20 @@ import {
   ScopedVars,
 } from '@grafana/data';
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
+import { EJSON } from 'bson';
+import { parseFilter } from 'mongodb-query-parser';
 import { lastValueFrom, Observable } from 'rxjs';
 
 import { DEFAULT_QUERY, Options, Query } from './types';
+
+const toExtendedJson = (value?: string): string | undefined => {
+  if (!value) {
+    return value;
+  }
+
+  const parsedValue = parseFilter(value);
+  return EJSON.stringify(parsedValue, { relaxed: true });
+};
 
 export class DataSource extends DataSourceWithBackend<Query, Options> {
   constructor(instanceSettings: DataSourceInstanceSettings<Options>) {
@@ -27,8 +38,15 @@ export class DataSource extends DataSourceWithBackend<Query, Options> {
       ...query,
       queryType: query.queryType || DEFAULT_QUERY.queryType,
       collection: getTemplateSrv().replace(query.collection, scopedVars),
-      filter: getTemplateSrv().replace(query.filter, scopedVars),
+      filter: getTemplateSrv().replace(
+        toExtendedJson(query.filter),
+        scopedVars,
+      ),
       sort: getTemplateSrv().replace(query.sort, scopedVars),
+      pipeline: getTemplateSrv().replace(
+        toExtendedJson(query.pipeline),
+        scopedVars,
+      ),
     };
   }
 
