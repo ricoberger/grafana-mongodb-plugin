@@ -180,3 +180,33 @@ func (d *Datasource) handleAggregate(ctx context.Context, query concurrent.Query
 	response.Frames = append(response.Frames, d.documentsToLogsFrame("Documents", documents, query.DataQuery.TimeRange.To))
 	return response
 }
+
+func (d *Datasource) handleDatabaseStatsQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+	return concurrent.QueryData(ctx, req, d.handleDatabaseStats, 10)
+}
+
+func (d *Datasource) handleDatabaseStats(ctx context.Context, query concurrent.Query) backend.DataResponse {
+	stats, err := d.mongoClient.GetDBStats(ctx)
+	if err != nil {
+		d.logger.Error("Failed to get database stats", "error", err.Error())
+		return backend.ErrorResponseWithErrorSource(err)
+	}
+
+	statNames, statValues := mongodb.StatsToRows(stats)
+
+	frame := data.NewFrame(
+		"Database Stats",
+		data.NewField("stat", nil, statNames),
+		data.NewField("value", nil, statValues),
+	)
+
+	frame.SetMeta(&data.FrameMeta{
+		PreferredVisualization: data.VisTypeTable,
+		Type:                   data.FrameTypeTable,
+	})
+
+	var response backend.DataResponse
+	response.Frames = append(response.Frames, frame)
+
+	return response
+}

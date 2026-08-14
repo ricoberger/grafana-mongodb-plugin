@@ -16,6 +16,7 @@ import (
 type Client interface {
 	Ping(ctx context.Context) error
 	GetCollections(ctx context.Context) ([]string, error)
+	GetDBStats(ctx context.Context) (bson.M, error)
 	Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error)
 	Count(ctx context.Context, collection string, filter string) (int64, error)
 	Aggregate(ctx context.Context, collection, pipeline string) ([]bson.M, error)
@@ -40,6 +41,21 @@ func (c *client) GetCollections(ctx context.Context) ([]string, error) {
 	}
 
 	return collections, nil
+}
+
+func (c *client) GetDBStats(ctx context.Context) (bson.M, error) {
+	command := bson.D{
+		{Key: "dbStats", Value: 1},
+		{Key: "scale", Value: 1},
+	}
+
+	var result bson.M
+	err := c.db.RunCommand(ctx, command).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (c *client) Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error) {

@@ -121,3 +121,85 @@ func TestFlattenDocument(t *testing.T) {
 		})
 	}
 }
+
+func TestStatsToRows(t *testing.T) {
+	tests := []struct {
+		name           string
+		document       bson.M
+		expectedStats  []string
+		expectedValues []string
+	}{
+		{
+			name:           "empty document",
+			document:       bson.M{},
+			expectedStats:  []string{},
+			expectedValues: []string{},
+		},
+		{
+			name: "rows are sorted alphabetically by stat name",
+			document: bson.M{
+				"storageSize": float64(2048),
+				"collections": int32(3),
+				"db":          "mydb",
+			},
+			expectedStats:  []string{"collections", "db", "storageSize"},
+			expectedValues: []string{"3", "mydb", "2048"},
+		},
+		{
+			name: "floats are formatted without scientific notation",
+			document: bson.M{
+				"dataSize":   float64(1234567),
+				"avgObjSize": float64(1024.5),
+			},
+			expectedStats:  []string{"avgObjSize", "dataSize"},
+			expectedValues: []string{"1024.5", "1234567"},
+		},
+		{
+			name: "strings are emitted bare and booleans via fmt",
+			document: bson.M{
+				"db":     "test",
+				"scaled": false,
+			},
+			expectedStats:  []string{"db", "scaled"},
+			expectedValues: []string{"test", "false"},
+		},
+		{
+			name: "nested values are flattened with dot separated keys",
+			document: bson.M{
+				"raw": bson.M{
+					"total": int64(10),
+				},
+			},
+			expectedStats:  []string{"raw.total"},
+			expectedValues: []string{"10"},
+		},
+		{
+			name: "command envelope metadata is stripped",
+			document: bson.M{
+				"db":          "mydb",
+				"collections": int32(2),
+				"ok":          float64(1),
+				"operationTime": bson.M{
+					"T": int64(1),
+				},
+				"$clusterTime": bson.M{
+					"clusterTime": int64(1),
+				},
+			},
+			expectedStats:  []string{"collections", "db"},
+			expectedValues: []string{"2", "mydb"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			stats, values := StatsToRows(tt.document)
+			if !reflect.DeepEqual(stats, tt.expectedStats) {
+				t.Errorf("StatsToRows() stats = %v, want %v", stats, tt.expectedStats)
+			}
+			if !reflect.DeepEqual(values, tt.expectedValues) {
+				t.Errorf("StatsToRows() values = %v, want %v", values, tt.expectedValues)
+			}
+		})
+	}
+}
