@@ -118,3 +118,35 @@ func valueToString(value any) string {
 		return fmt.Sprintf("%v", v)
 	}
 }
+
+// IndexStatsDocument assembles the $indexStats documents for a single index into
+// one document ready to be flattened into a stat/value table. Standalone servers
+// and replica sets return exactly one document, which is used as-is. Sharded
+// clusters return one document per shard/host, so each document is nested under
+// its shard (or host) name to disambiguate the otherwise identical stats.
+func IndexStatsDocument(documents []bson.M) bson.M {
+	if len(documents) == 0 {
+		return bson.M{}
+	}
+
+	if len(documents) == 1 {
+		return documents[0]
+	}
+
+	combined := make(bson.M, len(documents))
+	for _, document := range documents {
+		combined[indexStatsOrigin(document)] = document
+	}
+
+	return combined
+}
+
+func indexStatsOrigin(document bson.M) string {
+	if shard, ok := document["shard"].(string); ok && shard != "" {
+		return shard
+	}
+	if host, ok := document["host"].(string); ok && host != "" {
+		return host
+	}
+	return ""
+}

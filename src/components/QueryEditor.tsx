@@ -22,6 +22,7 @@ import {
   Verbosity,
 } from '../types';
 import { CollectionField } from './CollectionField';
+import { IndexField } from './IndexField';
 import { BsonEditor } from './editor/BsonEditor';
 
 type Props = QueryEditorProps<DataSource, Query, Options>;
@@ -52,6 +53,7 @@ export function QueryEditor({
               { label: 'Aggregate', value: 'aggregate' },
               { label: 'Database Stats', value: 'databasestats' },
               { label: 'Collection Stats', value: 'collectionstats' },
+              { label: 'Index Stats', value: 'indexstats' },
             ]}
             onChange={(option: ComboboxOption<QueryType>) => {
               onChange({
@@ -75,7 +77,24 @@ export function QueryEditor({
               onChange({
                 ...query,
                 collection: collection,
+                // Changing the collection invalidates a previously selected
+                // index, so clear it for the index stats query type.
+                ...(query.queryType === 'indexstats' ? { index: '' } : {}),
               });
+              onRunQuery();
+            }}
+          />
+        </InlineFieldRow>
+      )}
+
+      {query.queryType === 'indexstats' && (
+        <InlineFieldRow>
+          <IndexField
+            datasource={datasource}
+            collection={query.collection}
+            index={query.index}
+            onIndexChange={(index) => {
+              onChange({ ...query, index: index });
               onRunQuery();
             }}
           />

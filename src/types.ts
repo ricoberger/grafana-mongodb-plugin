@@ -27,6 +27,13 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     includeIndexDetails: false,
     includeWiredTiger: false,
   },
+  indexes: {
+    collection: '',
+  },
+  indexstats: {
+    collection: '',
+    index: '',
+  },
 };
 
 export const DEFAULT_QUERY: Partial<Query> = {
@@ -45,7 +52,9 @@ export type QueryType =
   | 'count'
   | 'aggregate'
   | 'databasestats'
-  | 'collectionstats';
+  | 'collectionstats'
+  | 'indexes'
+  | 'indexstats';
 
 export type Verbosity = 'queryPlanner' | 'executionStats' | 'allPlansExecution';
 
@@ -56,7 +65,8 @@ export interface Query
   QueryModelFind,
   QueryModelCount,
   QueryModelAggregate,
-  QueryModelCollectionStats {
+  QueryModelCollectionStats,
+  QueryModelIndexStats {
   queryType: QueryType;
 }
 
@@ -87,6 +97,11 @@ interface QueryModelCollectionStats {
   collection?: string;
   includeIndexDetails?: boolean;
   includeWiredTiger?: boolean;
+}
+
+interface QueryModelIndexStats {
+  collection?: string;
+  index?: string;
 }
 
 export interface Options extends DataSourceJsonData {

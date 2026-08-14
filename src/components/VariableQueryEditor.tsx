@@ -9,10 +9,16 @@ import React from 'react';
 
 import { DataSource } from '../datasource';
 import { DEFAULT_QUERIES, Options, Query, QueryType } from '../types';
+import { CollectionField } from './CollectionField';
 
 interface Props extends QueryEditorProps<DataSource, any, Options, Query> { }
 
-export function VariableQueryEditor({ query, onChange, onRunQuery }: Props) {
+export function VariableQueryEditor({
+  datasource,
+  query,
+  onChange,
+  onRunQuery,
+}: Props) {
   return (
     <>
       <InlineFieldRow>
@@ -24,6 +30,10 @@ export function VariableQueryEditor({ query, onChange, onRunQuery }: Props) {
               {
                 label: 'Collections',
                 value: 'collections',
+              },
+              {
+                label: 'Indexes',
+                value: 'indexes',
               },
             ]}
             onChange={(option: ComboboxOption<QueryType>) => {
@@ -37,6 +47,19 @@ export function VariableQueryEditor({ query, onChange, onRunQuery }: Props) {
           />
         </InlineField>
       </InlineFieldRow>
+
+      {query.queryType === 'indexes' && (
+        <InlineFieldRow>
+          <CollectionField
+            datasource={datasource}
+            collection={query.collection}
+            onCollectionChange={(collection) => {
+              onChange({ ...query, collection: collection });
+              onRunQuery();
+            }}
+          />
+        </InlineFieldRow>
+      )}
     </>
   );
 }

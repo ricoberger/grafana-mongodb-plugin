@@ -53,6 +53,8 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 	queryTypeMux.HandleFunc(models.QueryAggregate, ds.handleAggregateQueries)
 	queryTypeMux.HandleFunc(models.QueryDatabaseStats, ds.handleDatabaseStatsQueries)
 	queryTypeMux.HandleFunc(models.QueryCollectionStats, ds.handleCollectionStatsQueries)
+	queryTypeMux.HandleFunc(models.QueryIndexes, ds.handleIndexesQueries)
+	queryTypeMux.HandleFunc(models.QueryIndexStats, ds.handleIndexStatsQueries)
 	ds.queryHandler = queryTypeMux
 
 	return ds, nil

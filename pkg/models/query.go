@@ -9,6 +9,8 @@ const (
 	QueryAggregate       = "aggregate"
 	QueryDatabaseStats   = "databasestats"
 	QueryCollectionStats = "collectionstats"
+	QueryIndexes         = "indexes"
+	QueryIndexStats      = "indexstats"
 )
 
 type QueryModelFind struct {
@@ -36,4 +38,9 @@ type QueryModelCollectionStats struct {
 	Collection          string `json:"collection"`
 	IncludeIndexDetails bool   `json:"includeIndexDetails"`
 	IncludeWiredTiger   bool   `json:"includeWiredTiger"`
+}
+
+type QueryModelIndexStats struct {
+	Collection string `json:"collection"`
+	Index      string `json:"index"`
 }
