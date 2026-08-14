@@ -210,3 +210,50 @@ func (d *Datasource) handleDatabaseStats(ctx context.Context, query concurrent.Q
 
 	return response
 }
+
+func (d *Datasource) handleCollectionStatsQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+	return concurrent.QueryData(ctx, req, d.handleCollectionStats, 10)
+}
+
+func (d *Datasource) handleCollectionStats(ctx context.Context, query concurrent.Query) backend.DataResponse {
+	var qm models.QueryModelCollectionStats
+	err := json.Unmarshal(query.DataQuery.JSON, &qm)
+	if err != nil {
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
+	}
+
+	stats, err := d.mongoClient.GetCollectionStats(ctx, qm.Collection)
+	if err != nil {
+		d.logger.Error("Failed to get collection stats", "error", err.Error())
+		return backend.ErrorResponseWithErrorSource(err)
+	}
+
+	// The wiredTiger and indexDetails blocks contain verbose storage-engine
+	// internals that would flatten into hundreds of rows, so they are stripped
+	// unless the user explicitly opts in via the query editor.
+	var stripFields []string
+	if !qm.IncludeWiredTiger {
+		stripFields = append(stripFields, "wiredTiger")
+	}
+	if !qm.IncludeIndexDetails {
+		stripFields = append(stripFields, "indexDetails")
+	}
+
+	statNames, statValues := mongodb.StatsToRows(stats, stripFields...)
+
+	frame := data.NewFrame(
+		"Collection Stats",
+		data.NewField("stat", nil, statNames),
+		data.NewField("value", nil, statValues),
+	)
+
+	frame.SetMeta(&data.FrameMeta{
+		PreferredVisualization: data.VisTypeTable,
+		Type:                   data.FrameTypeTable,
+	})
+
+	var response backend.DataResponse
+	response.Frames = append(response.Frames, frame)
+
+	return response
+}

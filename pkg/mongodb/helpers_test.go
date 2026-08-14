@@ -126,6 +126,7 @@ func TestStatsToRows(t *testing.T) {
 	tests := []struct {
 		name           string
 		document       bson.M
+		stripFields    []string
 		expectedStats  []string
 		expectedValues []string
 	}{
@@ -189,11 +190,25 @@ func TestStatsToRows(t *testing.T) {
 			expectedStats:  []string{"collections", "db"},
 			expectedValues: []string{"2", "mydb"},
 		},
+		{
+			name: "extra strip fields are removed before flattening",
+			document: bson.M{
+				"size":       int32(100),
+				"nindexes":   int32(2),
+				"wiredTiger": bson.M{"cache": bson.M{"bytes": int64(42)}},
+				"indexDetails": bson.M{
+					"_id_": bson.M{"wiredTiger": bson.M{"bytes": int64(7)}},
+				},
+			},
+			stripFields:    []string{"wiredTiger", "indexDetails"},
+			expectedStats:  []string{"nindexes", "size"},
+			expectedValues: []string{"2", "100"},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stats, values := StatsToRows(tt.document)
+			stats, values := StatsToRows(tt.document, tt.stripFields...)
 			if !reflect.DeepEqual(stats, tt.expectedStats) {
 				t.Errorf("StatsToRows() stats = %v, want %v", stats, tt.expectedStats)
 			}

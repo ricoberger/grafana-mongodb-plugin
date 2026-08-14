@@ -51,6 +51,7 @@ export function QueryEditor({
               { label: 'Count', value: 'count' },
               { label: 'Aggregate', value: 'aggregate' },
               { label: 'Database Stats', value: 'databasestats' },
+              { label: 'Collection Stats', value: 'collectionstats' },
             ]}
             onChange={(option: ComboboxOption<QueryType>) => {
               onChange({
@@ -129,6 +130,40 @@ export function QueryEditor({
             }}
           />
         </InlineFieldRow>
+      )}
+
+      {query.queryType === 'collectionstats' && (
+        <>
+          <InlineFieldRow>
+            <InlineField label="Include Index Details" labelWidth={25}>
+              <InlineSwitch
+                value={query.includeIndexDetails ?? false}
+                onChange={(event: FormEvent<HTMLInputElement>) => {
+                  onChange({
+                    ...query,
+                    includeIndexDetails: event.currentTarget.checked,
+                  });
+                  onRunQuery();
+                }}
+              />
+            </InlineField>
+          </InlineFieldRow>
+
+          <InlineFieldRow>
+            <InlineField label="Include WiredTiger" labelWidth={25}>
+              <InlineSwitch
+                value={query.includeWiredTiger ?? false}
+                onChange={(event: FormEvent<HTMLInputElement>) => {
+                  onChange({
+                    ...query,
+                    includeWiredTiger: event.currentTarget.checked,
+                  });
+                  onRunQuery();
+                }}
+              />
+            </InlineField>
+          </InlineFieldRow>
+        </>
       )}
 
       {(query.queryType === 'find' || query.queryType === 'aggregate') && (
