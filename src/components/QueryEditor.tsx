@@ -1,15 +1,19 @@
-import { QueryEditorProps } from '@grafana/data';
+import { GrafanaTheme2, QueryEditorProps } from '@grafana/data';
 import {
+  Alert,
   Combobox,
   ComboboxOption,
   InlineField,
   InlineFieldRow,
   InlineSwitch,
   Input,
+  useStyles2,
 } from '@grafana/ui';
 import React, { ChangeEvent, FormEvent } from 'react';
 
+import { css } from '@emotion/css';
 import { DataSource } from '../datasource';
+import { getMissingRequiredFields } from '../query';
 import {
   DEFAULT_QUERIES,
   Options,
@@ -28,6 +32,13 @@ export function QueryEditor({
   onChange,
   onRunQuery,
 }: Props) {
+  const styles = useStyles2((theme: GrafanaTheme2) => ({
+    marginTop: css`
+      margin-top: ${theme.spacing(2)};
+    `,
+  }));
+  const missingFields = getMissingRequiredFields(query);
+
   return (
     <>
       <InlineFieldRow>
@@ -155,6 +166,16 @@ export function QueryEditor({
             </InlineField>
           </InlineFieldRow>
         )}
+
+      {missingFields.length > 0 && (
+        <div className={styles.marginTop}>
+          <Alert title="Missing required fields" severity="warning">
+            The query will not run until the following required field
+            {missingFields.length > 1 ? 's are' : ' is'} set:{' '}
+            {missingFields.join(', ')}.
+          </Alert>
+        </div>
+      )}
     </>
   );
 }
