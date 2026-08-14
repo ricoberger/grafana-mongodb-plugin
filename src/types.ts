@@ -21,6 +21,7 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     explain: false,
     verbosity: 'queryPlanner',
   },
+  databasestats: {},
 };
 
 export const DEFAULT_QUERY: Partial<Query> = {
@@ -33,7 +34,7 @@ export const DEFAULT_QUERY: Partial<Query> = {
   verbosity: 'queryPlanner',
 };
 
-export type QueryType = 'collections' | 'find' | 'count' | 'aggregate';
+export type QueryType = 'collections' | 'find' | 'count' | 'aggregate' | 'databasestats';
 
 export type Verbosity = 'queryPlanner' | 'executionStats' | 'allPlansExecution';
 

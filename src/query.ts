@@ -9,6 +9,7 @@ export const REQUIRED_FIELDS: Record<QueryType, Array<keyof Query>> = {
   find: ['collection', 'filter', 'sort', 'limit'],
   count: ['collection', 'filter'],
   aggregate: ['collection', 'pipeline'],
+  databasestats: [],
 };
 
 const FIELD_LABELS: Partial<Record<keyof Query, string>> = {

@@ -3,10 +3,11 @@ package models
 type QueryType string
 
 const (
-	QueryCollections = "collections"
-	QueryFind        = "find"
-	QueryCount       = "count"
-	QueryAggregate   = "aggregate"
+	QueryCollections   = "collections"
+	QueryFind          = "find"
+	QueryCount         = "count"
+	QueryAggregate     = "aggregate"
+	QueryDatabaseStats = "databasestats"
 )
 
 type QueryModelFind struct {

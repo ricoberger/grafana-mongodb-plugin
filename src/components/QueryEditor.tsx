@@ -50,6 +50,7 @@ export function QueryEditor({
               { label: 'Find', value: 'find' },
               { label: 'Count', value: 'count' },
               { label: 'Aggregate', value: 'aggregate' },
+              { label: 'Database Stats', value: 'databasestats' },
             ]}
             onChange={(option: ComboboxOption<QueryType>) => {
               onChange({
@@ -64,19 +65,21 @@ export function QueryEditor({
         </InlineField>
       </InlineFieldRow>
 
-      <InlineFieldRow>
-        <CollectionField
-          datasource={datasource}
-          collection={query.collection}
-          onCollectionChange={(collection) => {
-            onChange({
-              ...query,
-              collection: collection,
-            });
-            onRunQuery();
-          }}
-        />
-      </InlineFieldRow>
+      {query.queryType !== 'databasestats' && (
+        <InlineFieldRow>
+          <CollectionField
+            datasource={datasource}
+            collection={query.collection}
+            onCollectionChange={(collection) => {
+              onChange({
+                ...query,
+                collection: collection,
+              });
+              onRunQuery();
+            }}
+          />
+        </InlineFieldRow>
+      )}
 
       {(query.queryType === 'find' || query.queryType === 'count') && (
         <InlineFieldRow>
