@@ -218,3 +218,55 @@ func TestStatsToRows(t *testing.T) {
 		})
 	}
 }
+
+func TestIndexStatsDocument(t *testing.T) {
+	tests := []struct {
+		name      string
+		documents []bson.M
+		expected  bson.M
+	}{
+		{
+			name:      "no documents returns an empty document",
+			documents: []bson.M{},
+			expected:  bson.M{},
+		},
+		{
+			name: "single document is returned as-is",
+			documents: []bson.M{
+				{"name": "_id_", "host": "host-a:27017"},
+			},
+			expected: bson.M{"name": "_id_", "host": "host-a:27017"},
+		},
+		{
+			name: "multiple documents are nested under their shard",
+			documents: []bson.M{
+				{"name": "_id_", "host": "host-a:27017", "shard": "shard0"},
+				{"name": "_id_", "host": "host-b:27017", "shard": "shard1"},
+			},
+			expected: bson.M{
+				"shard0": bson.M{"name": "_id_", "host": "host-a:27017", "shard": "shard0"},
+				"shard1": bson.M{"name": "_id_", "host": "host-b:27017", "shard": "shard1"},
+			},
+		},
+		{
+			name: "multiple documents fall back to host when no shard is present",
+			documents: []bson.M{
+				{"name": "_id_", "host": "host-a:27017"},
+				{"name": "_id_", "host": "host-b:27017"},
+			},
+			expected: bson.M{
+				"host-a:27017": bson.M{"name": "_id_", "host": "host-a:27017"},
+				"host-b:27017": bson.M{"name": "_id_", "host": "host-b:27017"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IndexStatsDocument(tt.documents)
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("IndexStatsDocument() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}

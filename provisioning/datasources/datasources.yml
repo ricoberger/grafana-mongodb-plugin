@@ -13,7 +13,7 @@ datasources:
       hosts: host.docker.internal
       port: 27017
       database: backend
-      username: readonly
+      username: admin
       connectionOptions: replicaSet=rs0&directConnection=true&authSource=admin
     secureJsonData:
       password: ${MONGODB_PASSWORD}

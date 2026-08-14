@@ -257,3 +257,88 @@ func (d *Datasource) handleCollectionStats(ctx context.Context, query concurrent
 
 	return response
 }
+
+func (d *Datasource) handleIndexesQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+	return concurrent.QueryData(ctx, req, d.handleIndexes, 10)
+}
+
+func (d *Datasource) handleIndexes(ctx context.Context, query concurrent.Query) backend.DataResponse {
+	var qm models.QueryModelIndexStats
+	err := json.Unmarshal(query.DataQuery.JSON, &qm)
+	if err != nil {
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
+	}
+
+	indexes, err := d.mongoClient.GetCollectionIndexes(ctx, qm.Collection)
+	if err != nil {
+		d.logger.Error("Failed to get collection indexes", "error", err.Error())
+		return backend.ErrorResponseWithErrorSource(err)
+	}
+
+	names := make([]string, 0, len(indexes))
+	for _, index := range indexes {
+		if name, ok := index["name"].(string); ok {
+			names = append(names, name)
+		}
+	}
+
+	frame := data.NewFrame(
+		"Indexes",
+		data.NewField("indexes", nil, names),
+	)
+
+	frame.SetMeta(&data.FrameMeta{
+		PreferredVisualization: data.VisTypeTable,
+		Type:                   data.FrameTypeTable,
+	})
+
+	var response backend.DataResponse
+	response.Frames = append(response.Frames, frame)
+
+	return response
+}
+
+func (d *Datasource) handleIndexStatsQueries(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
+	return concurrent.QueryData(ctx, req, d.handleIndexStats, 10)
+}
+
+func (d *Datasource) handleIndexStats(ctx context.Context, query concurrent.Query) backend.DataResponse {
+	var qm models.QueryModelIndexStats
+	err := json.Unmarshal(query.DataQuery.JSON, &qm)
+	if err != nil {
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
+	}
+
+	indexStats, err := d.mongoClient.GetIndexStats(ctx, qm.Collection)
+	if err != nil {
+		d.logger.Error("Failed to get index stats", "error", err.Error())
+		return backend.ErrorResponseWithErrorSource(err)
+	}
+
+	// $indexStats returns one document per index (and one per shard/host on
+	// sharded clusters), so keep only the documents for the selected index.
+	var matching []bson.M
+	for _, document := range indexStats {
+		if name, ok := document["name"].(string); ok && name == qm.Index {
+			matching = append(matching, document)
+		}
+	}
+
+	statNames, statValues := mongodb.StatsToRows(mongodb.IndexStatsDocument(matching))
+
+	frame := data.NewFrame(
+		"Index Stats",
+		data.NewField("stat", nil, statNames),
+		data.NewField("value", nil, statValues),
+	)
+
+	frame.SetMeta(&data.FrameMeta{
+		PreferredVisualization: data.VisTypeTable,
+		Type:                   data.FrameTypeTable,
+	})
+
+	var response backend.DataResponse
+	response.Frames = append(response.Frames, frame)
+
+	return response
+}

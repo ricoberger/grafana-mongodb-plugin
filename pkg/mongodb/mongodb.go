@@ -18,6 +18,8 @@ type Client interface {
 	GetCollections(ctx context.Context) ([]string, error)
 	GetDBStats(ctx context.Context) (bson.M, error)
 	GetCollectionStats(ctx context.Context, collection string) (bson.M, error)
+	GetCollectionIndexes(ctx context.Context, collection string) ([]bson.M, error)
+	GetIndexStats(ctx context.Context, collection string) ([]bson.M, error)
 	Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error)
 	Count(ctx context.Context, collection string, filter string) (int64, error)
 	Aggregate(ctx context.Context, collection, pipeline string) ([]bson.M, error)
@@ -72,6 +74,50 @@ func (c *client) GetCollectionStats(ctx context.Context, collection string) (bso
 	}
 
 	return result, nil
+}
+
+func (c *client) GetCollectionIndexes(ctx context.Context, collection string) ([]bson.M, error) {
+	cursor, err := c.db.Collection(collection).Indexes().List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var results = make([]bson.M, 0)
+
+	for cursor.Next(ctx) {
+		var elem bson.M
+		err := cursor.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, elem)
+	}
+
+	return results, nil
+}
+
+func (c *client) GetIndexStats(ctx context.Context, collection string) ([]bson.M, error) {
+	cursor, err := c.db.Collection(collection).Aggregate(ctx, mongo.Pipeline{
+		{{Key: "$indexStats", Value: bson.D{}}},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var results = make([]bson.M, 0)
+
+	for cursor.Next(ctx) {
+		var elem bson.M
+		err := cursor.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, elem)
+	}
+
+	return results, nil
 }
 
 func (c *client) Find(ctx context.Context, collection string, filter string, sort string, limit int64) ([]bson.M, error) {

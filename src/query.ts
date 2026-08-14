@@ -11,6 +11,8 @@ export const REQUIRED_FIELDS: Record<QueryType, Array<keyof Query>> = {
   aggregate: ['collection', 'pipeline'],
   databasestats: [],
   collectionstats: ['collection'],
+  indexes: [],
+  indexstats: ['collection', 'index'],
 };
 
 const FIELD_LABELS: Partial<Record<keyof Query, string>> = {
@@ -19,6 +21,7 @@ const FIELD_LABELS: Partial<Record<keyof Query, string>> = {
   sort: 'Sort',
   limit: 'Limit',
   pipeline: 'Pipeline',
+  index: 'Index',
 };
 
 export const getMissingRequiredFields = (query: Query): string[] => {
