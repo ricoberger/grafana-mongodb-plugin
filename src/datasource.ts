@@ -13,6 +13,7 @@ import { EJSON } from 'bson';
 import { parseFilter } from 'mongodb-query-parser';
 import { lastValueFrom, Observable } from 'rxjs';
 
+import { getMissingRequiredFields } from './query';
 import { DEFAULT_QUERY, Options, Query } from './types';
 import { VariableSupport } from './variablesupport';
 
@@ -92,24 +93,6 @@ export class DataSource extends DataSourceWithBackend<Query, Options> {
   }
 
   filterQuery(query: Query): boolean {
-    if (
-      query.queryType === 'find' &&
-      (!query.collection || !query.filter || !query.sort || !query.limit)
-    ) {
-      return false;
-    }
-
-    if (query.queryType === 'count' && (!query.collection || !query.filter)) {
-      return false;
-    }
-
-    if (
-      query.queryType === 'aggregate' &&
-      (!query.collection || !query.pipeline)
-    ) {
-      return false;
-    }
-
-    return true;
+    return getMissingRequiredFields(query).length === 0;
   }
 }
