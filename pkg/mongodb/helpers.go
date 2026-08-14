@@ -62,13 +62,23 @@ var dbStatsMetadataFields = map[string]struct{}{
 // StatsToRows flattens the provided document and returns two parallel slices
 // representing a two-column table: the stat names (dot-separated for nested
 // values) and their string values. Command-envelope metadata (e.g. "ok" or
-// "$clusterTime") is stripped, and the rows are sorted alphabetically by stat
-// name so the resulting table stays stable across refreshes even though the
-// underlying document is an unordered map.
-func StatsToRows(document bson.M) ([]string, []string) {
+// "$clusterTime") is always stripped, and any additional top-level fields
+// passed via stripFields (e.g. "wiredTiger" or "indexDetails") are removed
+// before flattening. The rows are sorted alphabetically by stat name so the
+// resulting table stays stable across refreshes even though the underlying
+// document is an unordered map.
+func StatsToRows(document bson.M, stripFields ...string) ([]string, []string) {
+	strip := make(map[string]struct{}, len(dbStatsMetadataFields)+len(stripFields))
+	for key := range dbStatsMetadataFields {
+		strip[key] = struct{}{}
+	}
+	for _, field := range stripFields {
+		strip[field] = struct{}{}
+	}
+
 	filtered := make(bson.M, len(document))
 	for key, value := range document {
-		if _, isMetadata := dbStatsMetadataFields[key]; isMetadata {
+		if _, skip := strip[key]; skip {
 			continue
 		}
 		filtered[key] = value

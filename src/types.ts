@@ -22,6 +22,11 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     verbosity: 'queryPlanner',
   },
   databasestats: {},
+  collectionstats: {
+    collection: '',
+    includeIndexDetails: false,
+    includeWiredTiger: false,
+  },
 };
 
 export const DEFAULT_QUERY: Partial<Query> = {
@@ -34,7 +39,13 @@ export const DEFAULT_QUERY: Partial<Query> = {
   verbosity: 'queryPlanner',
 };
 
-export type QueryType = 'collections' | 'find' | 'count' | 'aggregate' | 'databasestats';
+export type QueryType =
+  | 'collections'
+  | 'find'
+  | 'count'
+  | 'aggregate'
+  | 'databasestats'
+  | 'collectionstats';
 
 export type Verbosity = 'queryPlanner' | 'executionStats' | 'allPlansExecution';
 
@@ -44,7 +55,8 @@ export interface Query
   QueryModelCollections,
   QueryModelFind,
   QueryModelCount,
-  QueryModelAggregate {
+  QueryModelAggregate,
+  QueryModelCollectionStats {
   queryType: QueryType;
 }
 
@@ -69,6 +81,12 @@ interface QueryModelAggregate {
   pipeline?: string;
   explain?: boolean;
   verbosity?: Verbosity;
+}
+
+interface QueryModelCollectionStats {
+  collection?: string;
+  includeIndexDetails?: boolean;
+  includeWiredTiger?: boolean;
 }
 
 export interface Options extends DataSourceJsonData {

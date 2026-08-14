@@ -3,11 +3,12 @@ package models
 type QueryType string
 
 const (
-	QueryCollections   = "collections"
-	QueryFind          = "find"
-	QueryCount         = "count"
-	QueryAggregate     = "aggregate"
-	QueryDatabaseStats = "databasestats"
+	QueryCollections     = "collections"
+	QueryFind            = "find"
+	QueryCount           = "count"
+	QueryAggregate       = "aggregate"
+	QueryDatabaseStats   = "databasestats"
+	QueryCollectionStats = "collectionstats"
 )
 
 type QueryModelFind struct {
@@ -29,4 +30,10 @@ type QueryModelAggregate struct {
 	Pipeline   string `json:"pipeline"`
 	Explain    bool   `json:"explain"`
 	Verbosity  string `json:"verbosity"`
+}
+
+type QueryModelCollectionStats struct {
+	Collection          string `json:"collection"`
+	IncludeIndexDetails bool   `json:"includeIndexDetails"`
+	IncludeWiredTiger   bool   `json:"includeWiredTiger"`
 }
