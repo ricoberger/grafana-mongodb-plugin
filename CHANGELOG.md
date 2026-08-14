@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.3.0](https://github.com/ricoberger/grafana-mongodb-plugin/tree/v0.3.0) (2026-08-14)
+
+[Full Changelog](https://github.com/ricoberger/grafana-mongodb-plugin/compare/v0.2.0...v0.3.0)
+
+- chore: update dependencies and remove e2e test setup [\#21](https://github.com/ricoberger/grafana-mongodb-plugin/pull/21) ([ricoberger](https://github.com/ricoberger))
+- feat\(query\): add index stats query type [\#20](https://github.com/ricoberger/grafana-mongodb-plugin/pull/20) ([ricoberger](https://github.com/ricoberger))
+- feat\(query\): add collection stats query type [\#19](https://github.com/ricoberger/grafana-mongodb-plugin/pull/19) ([ricoberger](https://github.com/ricoberger))
+- feat\(query\): add database stats query type [\#18](https://github.com/ricoberger/grafana-mongodb-plugin/pull/18) ([ricoberger](https://github.com/ricoberger))
+- feat\(query\): warn when required query fields are missing [\#17](https://github.com/ricoberger/grafana-mongodb-plugin/pull/17) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 7.9.1 [\#12](https://github.com/ricoberger/grafana-mongodb-plugin/pull/12) ([ricoberger](https://github.com/ricoberger))
+- feat: add variables support [\#6](https://github.com/ricoberger/grafana-mongodb-plugin/pull/6) ([ricoberger](https://github.com/ricoberger))
+- fix\(frontend\): set severity to `unknown` [\#5](https://github.com/ricoberger/grafana-mongodb-plugin/pull/5) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.2.0](https://github.com/ricoberger/grafana-mongodb-plugin/tree/v0.2.0) (2026-07-13)
 
 [Full Changelog](https://github.com/ricoberger/grafana-mongodb-plugin/compare/v0.1.0...v0.2.0)
