@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.0](https://github.com/ricoberger/grafana-mongodb-plugin/tree/v0.4.0) (2026-11-08)
+
+[Full Changelog](https://github.com/ricoberger/grafana-mongodb-plugin/compare/v0.3.0...v0.4.0)
+
+- chore: dependency updates [\#36](https://github.com/ricoberger/grafana-mongodb-plugin/pull/36) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 7.17.0 [\#33](https://github.com/ricoberger/grafana-mongodb-plugin/pull/33) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 7.11.0 [\#29](https://github.com/ricoberger/grafana-mongodb-plugin/pull/29) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.3.0](https://github.com/ricoberger/grafana-mongodb-plugin/tree/v0.3.0) (2026-08-14)
 
 [Full Changelog](https://github.com/ricoberger/grafana-mongodb-plugin/compare/v0.2.0...v0.3.0)
